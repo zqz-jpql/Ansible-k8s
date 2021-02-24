@@ -1,0 +1,6 @@
+---
+  - hosts: chronys
+    gather_facts: false
+    become: True
+    roles:
+      - chrony

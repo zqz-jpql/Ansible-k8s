@@ -1,0 +1,31 @@
+[deploy]
+192.168.0.10
+
+[chronys]
+192.168.0.10 role=server
+192.168.0.11 role=client
+192.168.0.12 role=client
+
+[dockers]
+192.168.0.10
+192.168.0.11
+192.168.0.12
+
+[etcds]
+192.168.0.10
+192.168.0.11
+192.168.0.12
+
+[masters]
+192.168.0.10 role=master hostname=node1.hy.com
+192.168.0.11 role=node   hostname=node2.hy.com
+192.168.0.12 role=node   hostname=node3.hy.com
+
+[nodes]
+192.168.0.10
+192.168.0.11
+192.168.0.12
+
+[all:vars]
+ansible_ssh_user=root
+ansible_ssh_pass=123456

@@ -1,0 +1,6 @@
+---
+- name: Include download_pkgs.yml
+  include_tasks: download_pkgs.yml
+
+- name: Include config.yml
+  include_tasks: config.yml

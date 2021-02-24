@@ -1,0 +1,30 @@
+---
+- name: 生成docker程序文件
+  copy:
+    src: "{{ item }}"
+    dest: /usr/bin/
+    mode: 0755
+  with_items:
+    - /tmp/docker/containerd
+    - /tmp/docker/containerd-shim
+    - /tmp/docker/ctr
+    - /tmp/docker/docker
+    - /tmp/docker/dockerd
+    - /tmp/docker/docker-init
+    - /tmp/docker/docker-proxy
+    - /tmp/docker/runc
+    
+- name: 创建docker配置文件目录
+  file:
+    name: /etc/docker/
+    state: directory
+
+- name: 生成docker服务文件
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: daemon.json.j2, dest: /etc/docker/daemon.json }
+    - { src: docker.service.j2, dest: /usr/lib/systemd/system/docker.service }
+  notify:
+    - Restart Docker

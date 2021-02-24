@@ -1,0 +1,6 @@
+---
+- name: Include common.yml
+  include_tasks: common.yml
+
+- name: Include deploy_etcd.yml
+  include_tasks: deploy_etcd.yml

@@ -1,0 +1,77 @@
+---
+- name: 分发证书
+  copy:
+    src: "{{ item }}"
+    dest: /opt/kubernetes/ssl/
+  with_items:
+    - /tmp/ssl/metrics-server-key.pem
+    - /tmp/ssl/metrics-server.pem
+    - /tmp/ssl/admin-key.pem
+    - /tmp/ssl/admin.pem
+
+- name: 分发程序文件
+  copy: 
+    src: "/tmp/kubernetes/server/bin/{{ item }}"
+    dest: /opt/kubernetes/bin/
+    mode: 0755
+  with_items:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+    - kubectl
+
+- name: 分发配置文件
+  copy:
+    src: "/tmp/cfg/{{ item }}"
+    dest: /opt/kubernetes/cfg/
+  with_items:
+    - bootstrap.kubeconfig
+    - kube-proxy.kubeconfig
+    - token.csv
+
+- name: 创建kubectl config文件
+  script: /tmp/kubectl_config.sh
+
+- name: 配置kube-apiserver
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: kube-apiserver.j2, dest: /opt/kubernetes/cfg/kube-apiserver }
+    - { src: kube-apiserver.service.j2, dest: /usr/lib/systemd/system/kube-apiserver.service }
+
+- name: 修改kube-apiserver配置文件
+  script: config_apiserver.sh
+  notify:
+    - Restart kube-apiserver
+
+- name: 配置controller-manager
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: kube-controller-manager.j2, dest: /opt/kubernetes/cfg/kube-controller-manager }
+    - { src: kube-controller-manager.service.j2, dest: /usr/lib/systemd/system/kube-controller-manager.service }
+  notify:
+    - Restart kube-controller-manager
+
+- name: 配置kube-scheduler
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: kube-scheduler.j2, dest: /opt/kubernetes/cfg/kube-scheduler }
+    - { src: kube-scheduler.service.j2, dest: /usr/lib/systemd/system/kube-scheduler.service }
+  notify:
+    - Restart kube-scheduler
+
+- name: 启动master相关服务
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  with_items:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
